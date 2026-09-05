@@ -8,6 +8,9 @@ double calcShipping(double total);
 double finalPrice(double total, double discount, double shipping);
 int countExpensiveItems(const std::vector<double>& prices, double threshold);
 
+void rotatePrices(std::vector<double>& prices, int shift, int direction);
+int sumOddBelowMainDiagonal(const std::vector<std::vector<int>>& A);
+
 double maxPriceEvenValueEvenIndex(const std::vector<int>& prices);
 int sumEvenAboveSecondaryDiagonal(const std::vector< std::vector<int> >& A);
 
