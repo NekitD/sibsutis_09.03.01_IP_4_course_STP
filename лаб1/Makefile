@@ -17,7 +17,6 @@ $(LIB_O): $(LIB_SRC) $(LIB_H)
 $(TEST_O): $(TEST_SRC) $(LIB_H)
 	$(CC) -c $< -o $@
 
-# Линковка
 $(TARGET): $(TEST_O) $(LIB_O)
 	$(CC) $^ -o $@
 
