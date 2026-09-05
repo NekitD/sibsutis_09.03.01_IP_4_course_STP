@@ -40,32 +40,35 @@ int main()
     cout << "countExpensiveItems({}, 10.0) = " << countExpensiveItems({}, 10.0) << endl;
     cout << "countExpensiveItems({15.0, 20.0}, 10.0) = " << countExpensiveItems({15.0, 20.0}, 10.0) << endl;
     cout << "countExpensiveItems({5.0, 3.0}, 10.0) = " << countExpensiveItems({5.0, 3.0}, 10.0) << endl;
+    cout << endl;
 
     cout << "========================================" << endl;
     cout << "C1 check for countExpensiveItems:" << endl;
     cout << "========================================" << endl;
     cout << "countExpensiveItems({5.0, 15.0}, 10.0) = " << countExpensiveItems({5.0, 15.0}, 10.0) << endl;
+    cout << endl;
 
     cout << "========================================" << endl;
     cout << "C2 check for countExpensiveItems:" << endl;
     cout << "========================================" << endl;
     cout << "countExpensiveItems({5.0, 10.0, 15.0}, 15.0) = " << countExpensiveItems({5.0, 10.0, 15.0}, 15.0) << endl;
     cout << "countExpensiveItems({5.0, 10.0, 15.0}, 10.0) = " << countExpensiveItems({5.0, 10.0, 15.0}, 10.0) << endl;
-
+    cout << endl;
     //=====Вариант 8==============================
     // function 8: C0 C1 C2
     cout << "========================================" << endl;
     cout << "C0 C1 C2 check for maxPriceEvenValueEvenIndex:" << endl;
     cout << "========================================" << endl;
     cout << "maxPriceEvenValueEvenIndex({}) = " << maxPriceEvenValueEvenIndex({}) << endl;
-    cout << "maxPriceEvenValueEvenIndex({2, 4, 5, 6, NULL, 7, 2}) = " << maxPriceEvenValueEvenIndex({2, 4, 5, 6, NULL, 7, 2}) << endl;
-
+    cout << "maxPriceEvenValueEvenIndex({2, 4, 5, 6, 8, 9, NULL, 7, 2}) = " << maxPriceEvenValueEvenIndex({2, 4, 5, 6, 8, 9, NULL, 7, 2}) << endl;
+    cout << endl;
     // function 3: C0 C1 C2
     cout << "========================================" << endl;
     cout << "C0 C1 C2 check for sumEvenAboveSecondaryDiagonal:" << endl;
     cout << "========================================" << endl;
     cout << "sumEvenAboveSecondaryDiagonal({}) = " << sumEvenAboveSecondaryDiagonal({}) << endl;
     cout << "sumEvenAboveSecondaryDiagonal({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) = " << sumEvenAboveSecondaryDiagonal({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) << endl;
+    cout << endl;
 }
 
 
