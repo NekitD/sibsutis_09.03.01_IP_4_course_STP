@@ -7,12 +7,24 @@ LIB_O = order_calc.o
 TEST_SRC = test.cpp
 TEST_O = test.o
 
-all: $(TEST_O)
+TARGET = test
 
-$(TEST_O) : $(TEST_SRC) $(LIB_SRC)
-	$(CC) $< -o $@
+all: $(TARGET)
+
+$(LIB_O): $(LIB_SRC) $(LIB_H)
+	$(CC) -c $< -o $@
+
+$(TEST_O): $(TEST_SRC) $(LIB_H)
+	$(CC) -c $< -o $@
+
+# Линковка
+$(TARGET): $(TEST_O) $(LIB_O)
+	$(CC) $^ -o $@
 
 run:
-	./$(TEST_O)
+	./$(TARGET)
 
-.PHONY: run
+clean:
+	rm -f $(TEST_O) $(LIB_O) $(TARGET)
+
+.PHONY: run clean
