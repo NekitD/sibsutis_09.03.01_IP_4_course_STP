@@ -74,6 +74,61 @@ int countExpensiveItems(const std::vector<double>& prices, double threshold) {
   return count;
 }
 
+// Вариант 7
+void rotatePrices(std::vector<double>& prices, int shift, int direction)
+{
+    if (shift <= 0 || prices.empty())
+    {
+        return;
+    }
+
+    shift = shift % prices.size();
+    if (shift == 0)
+    {
+        return;
+    }
+    std::vector<double> newprices(prices.size());
+    if (direction == 0)
+    {
+        for (int i = 0; i < prices.size(); i++)
+        {
+            newprices[(i + shift) % prices.size()] = prices[i];
+        }
+    }
+    else if (direction == 1)
+    {
+        for (int i = 0; i < prices.size(); i++)
+        {
+            newprices[(i - shift + prices.size()) % prices.size()] = prices[i];
+        }
+    }
+    prices = std::move(newprices);
+}
+
+int sumOddBelowMainDiagonal(const std::vector<std::vector<int>>& A)
+{
+    if (A.empty() || A[0].empty())
+    {
+        return 0;
+    }
+    int sum = 0;
+    int rows = A.size();
+    int cols = A[0].size();
+
+    for (int i = 1; i < rows; i++)
+    {
+        for (int j = 0; j < i; j++)
+        {
+            if (A[i][j] % 2 != 0)
+            {
+                sum += A[i][j];
+            }
+        }
+    }
+
+    return sum;
+}
+
 // Вариант 8
 double maxPriceEvenValueEvenIndex(const std::vector<int>& prices){
   std::vector<int>::const_iterator price;
