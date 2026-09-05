@@ -80,7 +80,7 @@ double maxPriceEvenValueEvenIndex(const std::vector<int>& prices){
   int max = 0;
   int id = 0;
   for(price = prices.begin(); price != prices.end(); price++){
-    if((*price % 2 == 0) && (id % 2 == 0) && (*price > max)){
+    if((*price) && (*price % 2 == 0) && (id % 2 == 0) && (*price > max)){
       max = *price;
     }
     id++;

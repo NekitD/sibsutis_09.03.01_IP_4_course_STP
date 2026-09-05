@@ -33,6 +33,15 @@ int main()
     //C2
     cout << "countExpensiveItems({5.0, 10.0, 15.0}, 15.0) = " << countExpensiveItems({5.0, 10.0, 15.0}, 15.0);
     cout << "countExpensiveItems({5.0, 10.0, 15.0}, 10.0) = " << countExpensiveItems({5.0, 10.0, 15.0}, 10.0);
+
+    //=====Вариант 8==============================
+    // function 8: C0 C1 C2
+    cout << "maxPriceEvenValueEvenIndex({}) = " << maxPriceEvenValueEvenIndex({}) << endl;
+    cout << "maxPriceEvenValueEvenIndex({2, 4, 5, 6, NULL, 7, 2}) = " << maxPriceEvenValueEvenIndex({2, 4, 5, 6, NULL, 7, 2}) << endl;
+
+    // function 3: C0 C1 C2
+    cout << "sumEvenAboveSecondaryDiagonal({}) = " << sumEvenAboveSecondaryDiagonal({}) << endl;
+    cout << "sumEvenAboveSecondaryDiagonal({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) = " << sumEvenAboveSecondaryDiagonal({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) << endl;
 }
 
 
