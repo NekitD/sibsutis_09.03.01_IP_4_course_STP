@@ -1,5 +1,6 @@
 #include <iostream>
 #include "order_calc.h"
+#include <gtest/gtest.h>
 
 using namespace std;
 
@@ -69,6 +70,22 @@ int main()
     cout << "sumEvenAboveSecondaryDiagonal({}) = " << sumEvenAboveSecondaryDiagonal({}) << endl;
     cout << "sumEvenAboveSecondaryDiagonal({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) = " << sumEvenAboveSecondaryDiagonal({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}) << endl;
     cout << endl;
+}
+
+TEST(Var8Func1Test, emptyTest){
+    EXPECT_EQ(maxPriceEvenValueEvenIndex({}), 0);
+}
+
+TEST(Var8Func1Test, arrayTest){
+    EXPECT_EQ(maxPriceEvenValueEvenIndex({2, 4, 5, 6, 8, 9, NULL, 7, 2}), 8);
+}
+
+TEST(Var8Func2Test, emptyTest){
+    EXPECT_EQ(sumEvenAboveSecondaryDiagonal({}), 0);
+}
+
+TEST(Var8Func2Test, arrayTest){
+    EXPECT_EQ(sumEvenAboveSecondaryDiagonal({{1, 2, 3}, {4, 5, 6}, {7, 8, 9}}), 6);
 }
 
 
