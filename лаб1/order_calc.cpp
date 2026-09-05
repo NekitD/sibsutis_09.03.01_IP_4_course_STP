@@ -73,3 +73,37 @@ int countExpensiveItems(const std::vector<double>& prices, double threshold) {
   }
   return count;
 }
+
+// Вариант 8
+double maxPriceEvenValueEvenIndex(const std::vector<int>& prices){
+  std::vector<int>::const_iterator price;
+  int max = 0;
+  int id = 0;
+  for(price = prices.begin(); price != prices.end(); price++){
+    if((*price % 2 == 0) && (id % 2 == 0) && (*price > max)){
+      max = *price;
+    }
+    id++;
+  } 
+  return max;
+}
+
+int sumEvenAboveSecondaryDiagonal(const std::vector<std::vector<int>>& A){
+  std::vector<std::vector<int>>::const_iterator row;
+  std::vector<int>::const_iterator col;
+  int row_id = 0;
+  int col_id = 0;
+  int sum = 0;
+  int size = A.size();
+  for(row = A.begin(); row != A.end(); row++){
+    col_id = 0;
+    for(col = (*row).begin(); col != (*row).end(); col++){
+      if((*col % 2 == 0) && (row_id + col_id < size - 1)){
+        sum += *col;
+      }
+      col_id++;
+    }
+    row_id++;
+  }
+  return sum;
+}
