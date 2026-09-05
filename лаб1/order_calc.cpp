@@ -80,7 +80,7 @@ double maxPriceEvenValueEvenIndex(const std::vector<int>& prices){
   int max = 0;
   int id = 0;
   for(price = prices.begin(); price != prices.end(); price++){
-    if((*price) && (*price % 2 == 0) && (id % 2 == 0) && (*price > max)){
+    if((*price % 2 == 0) && (id % 2 == 0) && (*price > max)){
       max = *price;
     }
     id++;
@@ -89,7 +89,7 @@ double maxPriceEvenValueEvenIndex(const std::vector<int>& prices){
 }
 
 int sumEvenAboveSecondaryDiagonal(const std::vector<std::vector<int>>& A){
-  std::vector<std::vector<int>>::const_iterator row;
+  std::vector< std::vector<int> >::const_iterator row;
   std::vector<int>::const_iterator col;
   int row_id = 0;
   int col_id = 0;
