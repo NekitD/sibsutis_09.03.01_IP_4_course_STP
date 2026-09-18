@@ -34,7 +34,7 @@ add_executable(TaskManager_FLTK
     src/repository.h
     src/taskmanager.cpp
     src/taskmanager.h
- "src/repository.cpp")
+ "src/repository.cpp" "src/repository.cpp")
 
 target_include_directories(TaskManager_FLTK PRIVATE src)
 target_link_libraries(TaskManager_FLTK PRIVATE fltk::fltk)

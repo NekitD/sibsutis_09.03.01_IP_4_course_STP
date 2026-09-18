@@ -10,24 +10,12 @@ private:
     std::vector<T> items;
 
 public:
-    void Add(T item) {
-        items.push_back(item);
-    }
-    void Remove(int index) {
-        items.erase(index);
-    }
-    void Update(int index, T item) {
-        items[index] = item;
-    }
-    int Size() const{
-        return items.size();
-    }
-    std::vector<T> GetAll() const{
-        return items;
-    }
-    void Clear() {
-        items.clear();
-    }
+    void Add(T item);
+    void Remove(int index);
+    void Update(int index, T item);
+    int Size() const;
+    std::vector<T> GetAll() const;
+    void Clear();
 };
 
 #endif
