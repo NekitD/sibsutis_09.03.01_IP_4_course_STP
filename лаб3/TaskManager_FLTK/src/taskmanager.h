@@ -32,11 +32,11 @@ public:
                     std::string status);
 
     void DeleteTask(int index);
-    std::vector<Task> GetTasks();
+    std::vector<Task> GetTasks() const;
 
     void AddProject(std::string name);
     void DeleteProject(int index);
-    std::vector<Project> GetProjects();
+    std::vector<Project> GetProjects() const;
 };
 
 #endif
