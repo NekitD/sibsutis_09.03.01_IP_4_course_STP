@@ -1,17 +1,19 @@
 #include "taskmanager.h"
 
-TaskManager::TaskManager() {
+TaskManager::TaskManager(): nextProjectId(0), nextTaskId(0) {
 
 }
 
 void TaskManager::AddTask(std::string title, std::string description, 
     std::string priority, std::string status) {
 
-    Task new_task(taskRepository.Size(), title);
+    Task new_task(nextTaskId, title);
     new_task.SetDescription(description);
     new_task.SetPriority(priority);
     new_task.SetStatus(status);
     taskRepository.Add(new_task);
+
+    nextTaskId++;
 
 }
 
@@ -36,8 +38,9 @@ std::vector<Task> TaskManager::GetTasks() const{
 }
 
 void TaskManager::AddProject(std::string name) {
-    Project new_proj(projectRepository.Size(), name);
+    Project new_proj(nextProjectId, name);
     projectRepository.Add(new_proj);
+    nextProjectId++;
 }
 
 void TaskManager::DeleteProject(int index) {
