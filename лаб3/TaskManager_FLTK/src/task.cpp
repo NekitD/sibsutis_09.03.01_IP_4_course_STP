@@ -1,7 +1,7 @@
-#include "task.h";
+#include "task.h"
 
 
-Task::Task(int _id, std::string _title): : id(_id), title(_title), description(""), status("Todo"), priority("Medium") {}
+Task::Task(int _id, std::string _title) : id(_id), title(_title), description(""), status("Todo"), priority("Medium") {}
 
 int Task::GetId() const{
 	return id;
