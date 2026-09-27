@@ -33,10 +33,11 @@ public:
                     std::string status);
 
     void DeleteTask(int index);
-    std::vector<Task> GetTasks();
+    std::vector<Task> GetTasks() const;
 
     bool MoveTaskToProject(int taskIndex, int projectId);
 
+    Project FindProject(int index);
     int CountTasksInProject(int projectId);
     int CountTasksInProjectByStatus(int projectId, std::string status);
     double CompletionPercent(int projectId);

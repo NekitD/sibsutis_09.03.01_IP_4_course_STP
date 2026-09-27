@@ -15,6 +15,10 @@ public:
         items.push_back(item);
     }
 
+    T Find(int id) {
+        return items.at(id);
+    }
+
     void Remove(int index)
     {
         if (index >= 0 && index < static_cast<int>(items.size()))
@@ -36,7 +40,7 @@ public:
         return static_cast<int>(items.size());
     }
 
-    std::vector<T> GetAll()
+    std::vector<T> GetAll() const
     {
         return items;
     }
