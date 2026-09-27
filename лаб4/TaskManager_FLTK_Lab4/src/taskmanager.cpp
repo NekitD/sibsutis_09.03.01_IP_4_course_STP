@@ -124,13 +124,13 @@ bool TaskManager::MoveTaskToProject(int taskId, int projectId) {
     if (taskId <= 0 || taskId > GetTasks().size() - 1) {
         return false;
     }
-    if (!FindProject(projectId)) {
+    if (FindProject(projectId) == NULL) { // ВЫДАЁТ ОШИБКУ
         return false;
     }
     Task old_task = GetTasks()[taskId];
     UpdateTask(taskId, old_task.GetTitle(), old_task.GetDescription(),
         old_task.GetPriority(),
-        old_task.GetStatus(), projectId);
+        old_task.GetStatus()); // Нужно сделать обновление projectId;
     return true;
 }
 
