@@ -82,16 +82,22 @@ void TaskManager::AddTask(std::string title, std::string description,
 
 }
 
-void TaskManager::UpdateTask(int index, std::string title, std::string description,
-    std::string priority, std::string status) {
+void TaskManager::UpdateTask(int index, std::string title, std::string description, std::string priority, std::string status)
+{
 
-    Task new_task(index, title);
-    new_task.SetDescription(description);
-    new_task.SetPriority(priority);
-    new_task.SetStatus(status);
+    std::vector<Task> tasks = taskRepository.GetAll();
+    if(index < 0 || index >= static_cast<int>(tasks.size()))
+    {
+        return;
+    }
 
-    taskRepository.Update(index, new_task);
+    Task task = tasks[index];
+    task.SetTitle(title);
+    task.SetDescription(description);
+    task.SetPriority(priority);
+    task.SetStatus(status);
 
+    taskRepository.Update(index, task);
 }
 
 void TaskManager::DeleteTask(int index) {
@@ -108,7 +114,25 @@ void TaskManager::AddProject(std::string name) {
     nextProjectId++;
 }
 
-void TaskManager::DeleteProject(int index) {
+void TaskManager::DeleteProject(int index)
+{
+    std::vector<Project> projects = projectRepository.GetAll();
+    if(index < 0 || index >= static_cast<int>(projects.size()))
+    {
+        return;
+    }
+
+    int projectId = projects[index].getId();
+
+    std::vector<Task> tasks = taskRepository.GetAll();
+    for(int i = static_cast<int>(tasks.size()) - 1; i >= 0; --i)
+    {
+        if(tasks[i].GetProjectId() == projectId)
+        {
+            taskRepository.Remove(i);
+        }
+    }
+
     projectRepository.Remove(index);
 }
 
@@ -117,20 +141,40 @@ std::vector<Project> TaskManager::GetProjects() const {
 }
 
 Project TaskManager::FindProject(int index) {
-    return projectReposirory.Find(index);
+    return projectRepository.Find(index);
 }
 
-bool TaskManager::MoveTaskToProject(int taskId, int projectId) {
-    if (taskId <= 0 || taskId > GetTasks().size() - 1) {
+bool TaskManager::MoveTaskToProject(int taskIndex, int projectId)
+{
+    std::vector<Task> tasks = taskRepository.GetAll();
+
+    if(taskIndex < 0 || taskIndex >= static_cast<int>(tasks.size()))
+    {
         return false;
     }
-    if (FindProject(projectId) == NULL) { // ВЫДАЁТ ОШИБКУ
-        return false;
+
+    if(projectId != 0)
+    {
+        std::vector<Project> projects = projectRepository.GetAll();
+        bool found = false;
+        for(int i = 0; i < static_cast<int>(projects.size()); i++)
+        {
+            if(projects[i].getId() == projectId)
+            {
+                found = true;
+                break;
+            }
+        }
+        if(!found)
+        {
+            return false;
+        }
     }
-    Task old_task = GetTasks()[taskId];
-    UpdateTask(taskId, old_task.GetTitle(), old_task.GetDescription(),
-        old_task.GetPriority(),
-        old_task.GetStatus()); // Нужно сделать обновление projectId;
+
+    Task task = tasks[taskIndex];
+    task.SetProjectId(projectId);
+    taskRepository.Update(taskIndex, task);
+
     return true;
 }
 
@@ -156,10 +200,12 @@ int TaskManager::CountTasksInProjectByStatus(int projectId, std::string status) 
     return count;
 }
 
-double TaskManager::CompletionPercent(int projectId) {
+double TaskManager::CompletionPercent(int projectId)
+{
     int common = CountTasksInProject(projectId);
-    if (common == 0) {
-        return 0;
+    if(common == 0)
+    {
+        return 0.0;
     }
-    return (double)CountTasksInProjectByStatus(projectId, "Done") / common;
+    return 100.0 * CountTasksInProjectByStatus(projectId, "Done") / common;
 }
