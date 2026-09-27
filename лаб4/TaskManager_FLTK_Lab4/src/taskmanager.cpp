@@ -131,4 +131,35 @@ bool TaskManager::MoveTaskToProject(int taskId, int projectId) {
     UpdateTask(taskId, old_task.GetTitle(), old_task.GetDescription(),
         old_task.GetPriority(),
         std::string status);
+    return true;
+}
+
+int TaskManager::CountTasksInProject(int projectId) {
+    std::vector<Task> tasks = taskRepository.GetAll();
+    int count = 0;
+    for (std::vector<Task>::iterator task = tasks.begin(); task != tasks.end(); task++) {
+        if (task->GetProjectId() == projectId) {
+            count++;
+        }
+    }
+    return count;
+}
+
+int TaskManager::CountTasksInProjectByStatus(int projectId, std::string status) {
+    std::vector<Task> tasks = taskRepository.GetAll();
+    int count = 0;
+    for (std::vector<Task>::iterator task = tasks.begin(); task != tasks.end(); task++) {
+        if (task->GetProjectId() == projectId && task->GetStatus() == status) {
+            count++;
+        }
+    }
+    return count;
+}
+
+double TaskManager::CompletionPercent(int projectId) {
+    int common = CountTasksInProject(projectId);
+    if (common == 0) {
+        return 0;
+    }
+    return (double)CountTasksInProjectByStatus(projectId, "Done") / common;
 }

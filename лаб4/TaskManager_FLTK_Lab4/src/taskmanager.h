@@ -43,7 +43,7 @@ public:
 
     void AddProject(std::string name);
     void DeleteProject(int index);
-    std::vector<Project> GetProjects();
+    std::vector<Project> GetProjects() const;
 };
 
 #endif
