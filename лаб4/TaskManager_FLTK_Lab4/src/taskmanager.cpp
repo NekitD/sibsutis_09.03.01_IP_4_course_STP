@@ -130,7 +130,7 @@ bool TaskManager::MoveTaskToProject(int taskId, int projectId) {
     Task old_task = GetTasks()[taskId];
     UpdateTask(taskId, old_task.GetTitle(), old_task.GetDescription(),
         old_task.GetPriority(),
-        std::string status);
+        old_task.GetStatus(), projectId);
     return true;
 }
 
