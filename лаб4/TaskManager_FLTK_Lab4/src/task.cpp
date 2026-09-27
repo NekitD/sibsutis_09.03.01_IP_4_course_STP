@@ -9,7 +9,7 @@ int Task::GetId() const {
 }
 
 int Task::GetProjectId() const {
-	return project_id;
+	return projectId;
 }
 
 std::string Task::GetTitle() const {
@@ -29,7 +29,7 @@ std::string Task::GetPriority() const {
 }
 
 void Task::SetProjectId(int _projId) {
-	project_id = _projId;
+	projectId = _projId;
 }
 
 void Task::SetTitle(std::string _title) {
