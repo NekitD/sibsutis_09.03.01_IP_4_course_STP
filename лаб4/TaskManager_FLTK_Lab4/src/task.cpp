@@ -1,10 +1,10 @@
 #include "task.h"
 
 
-Task::Task(int _id, std::string _title, int _projectId) : id(_id), title(_title), 
-	projectId(_projectId) description(""), status("Todo"), priority("Medium") {}
+Task::Task(int _id, std::string _title, int _projectId) : id(_id), title(_title),
+projectId(_projectId), description(""), status("Todo"), priority("Medium") {}
 
-int Task::GetId() const{
+int Task::GetId() const {
 	return id;
 }
 
@@ -41,15 +41,15 @@ void Task::SetDescription(std::string _description) {
 }
 
 void Task::SetStatus(std::string _status) {
-	if(_status == "Todo" || _status == "In Progress" || _status == "Done")
+	if (_status == "Todo" || _status == "In Progress" || _status == "Done")
 	{
-        status = _status;
-    }
+		status = _status;
+	}
 }
 
 void Task::SetPriority(std::string _priority) {
-	if(_priority == "Low" || _priority == "Medium" || _priority == "High")
+	if (_priority == "Low" || _priority == "Medium" || _priority == "High")
 	{
-        priority = _priority;
-    }
+		priority = _priority;
+	}
 }

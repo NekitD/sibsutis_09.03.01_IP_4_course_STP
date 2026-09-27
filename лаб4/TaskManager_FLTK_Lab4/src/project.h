@@ -15,7 +15,6 @@ public:
 
     int getId();
     std::string getName();
-
     void setName(std::string name);
 };
 
