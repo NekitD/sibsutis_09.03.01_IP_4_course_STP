@@ -128,11 +128,17 @@ std::vector<Order> Database::listByStatus(const std::string& status) {
 }
 
 int Database::countClosedOrders() {
-    // TODO
-    return 0;
+    pqxx::work w(conn_);
+    string q = "SELECT*FROM orders WHERE status = $1 OR status = $2";
+    pqxx::result res = w.exec_params(q, "cancelled", "issued");
+    return res.size();
 }
 
 int Database::deleteClosedOrders() {
-    // TODO
-    return 0;
+    int count = countClosedOrders();
+    pqxx::work w(conn_);
+    string q = "DELETE FROM orders WHERE status = $1 OR status = $2";
+    pqxx::result res = w.exec_params(q, "cancelled", "issued");
+    w.commit();
+    return count;
 }
