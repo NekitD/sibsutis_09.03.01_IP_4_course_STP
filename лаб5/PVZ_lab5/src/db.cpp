@@ -55,8 +55,26 @@ std::vector<Order> Database::listOrders(const std::string& filter) {
 
 std::string Database::addOrder(const std::string& contact,
                                const std::string& cell) {
-    // TODO
-    return "";
+    pqxx::work w(conn_);
+    string q = "INSERT INTO orders (order_code, phone, parcel_article, cell) VALUES ($1, $2, $3, $4)";
+    string code = "";
+    if (looksLikePhone(contact)) {
+        w.exec_params(code, contact, "", cell);
+    }
+    else {
+        w.exec_params(code, "", contact, cell);
+    }
+    q = "SELECT id FROM orders WHERE phone = $1 OR parcel_article = $1";
+    pqxx::result res = w.exec_params(q, contact);
+    string pad = "";
+    int num = res[0]["id"];
+    int temp = num;
+    while (temp % 10 != 0) {
+        pad += "0";
+        temp /= 10;
+    }
+    code = "PVZ-" + pad + num;
+    return code;
 }
 
 bool Database::issueOrder(const std::string& code) {
@@ -67,9 +85,8 @@ bool Database::issueOrder(const std::string& code) {
         return false;
     }
     q = "UPDATE orders SET status = $1, issued_at = NOW() WHERE order_code = $2"
-    pqxx::result res = w.exec_params(q, "issued", code);
+    w.exec_params(q, "issued", code);
     w.commit();
-    if(res.empty()) return false;
     return true;
 }
 
@@ -81,9 +98,8 @@ bool Database::cancelOrder(const std::string& code) {
         return false;
     }
     q = "UPDATE orders SET status = $1 WHERE order_code = $2"
-    pqxx::result res = w.exec_params(q, "canceled", code);
+    w.exec_params(q, "cancelled", code);
     w.commit();
-    if (res.empty()) return false;
     return true;
 }
 
@@ -138,7 +154,7 @@ int Database::deleteClosedOrders() {
     int count = countClosedOrders();
     pqxx::work w(conn_);
     string q = "DELETE FROM orders WHERE status = $1 OR status = $2";
-    pqxx::result res = w.exec_params(q, "cancelled", "issued");
+    w.exec_params(q, "cancelled", "issued");
     w.commit();
     return count;
 }
