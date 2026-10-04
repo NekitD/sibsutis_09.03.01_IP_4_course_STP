@@ -1,14 +1,14 @@
 cmake_minimum_required(VERSION 3.16)
 project(pickup_point CXX)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-find_package(FLTK REQUIRED)
-find_package(PostgreSQL REQUIRED)
+list(APPEND CMAKE_PREFIX_PATH "C:/FLTK")
 
-find_path(LIBPQXX_INCLUDE pqxx/pqxx)
-find_library(LIBPQXX_LIB NAMES pqxx libpqxx)
+find_package(FLTK CONFIG REQUIRED)
+find_package(PostgreSQL REQUIRED)
+find_package(libpqxx CONFIG REQUIRED)
 
 add_executable(pickup_point
     src/main.cpp
@@ -17,9 +17,10 @@ add_executable(pickup_point
     src/dialogs.cpp
 )
 
-target_include_directories(pickup_point PRIVATE src ${LIBPQXX_INCLUDE})
+target_include_directories(pickup_point PRIVATE src)
+
 target_link_libraries(pickup_point PRIVATE
-    ${FLTK_LIBRARIES}
-    ${LIBPQXX_LIB}
+    fltk::fltk
+    libpqxx::pqxx
     PostgreSQL::PostgreSQL
 )
