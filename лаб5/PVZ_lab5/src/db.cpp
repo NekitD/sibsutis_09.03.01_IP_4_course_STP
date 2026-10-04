@@ -30,24 +30,35 @@ Database::Database(const std::string& conn_str)
 std::vector<Order> Database::listOrders(const std::string& filter) {
     std::vector<Order> orders;
     pqxx::work w(conn_);
+    pqxx::result res;
     string q;
     if (filter.empty()) {
-        q = "SELECT*FROM orders ORDER BY issued_at DESC"
-        res = w.exec(q)
+        q = "SELECT*FROM orders ORDER BY issued_at DESC";
+        res = w.exec(q);
     }
     else {
-        q = "SELECT*FROM orders WHERE $1 ORDER BY issued_at DESC"
+        q = "SELECT*FROM orders WHERE (POSITION($1 IN order_code) != 0 OR POSITION($1 IN phone) != 0 OR POSITION($1 IN parcel_article) != 0) ORDER BY issued_at DESC";
         res = w.exec_params(q, filter);
     }
     for (int i = 0; i < res.size(); i++) {
         Order ord;
-        ord.id = res[i]["id"];
-        ord.article = res[i]["parcel_article"];
-        ord.cell = res[i]["cell"];
-        ord.code = res[i]["order_code"];
-        ord.created_at = res[i]["created_at"];
-        ord.phone = res[i]["phone"];
-        ord.status = res[i]["status"];
+        ord.id = res[i]["id"].as<int>();
+        if (res[i]["parcel_article"].is_null()) {
+            ord.article = "";
+        }
+        else {
+            ord.article = res[i]["parcel_article"].as<string>();
+        }
+        if (res[i]["cell"].is_null()) {
+            ord.cell = "";
+        }
+        else {
+            ord.cell = res[i]["cell"].as<string>();
+        }
+        ord.code = res[i]["order_code"].as<string>();
+        ord.created_at = res[i]["created_at"].as<string>();
+        ord.phone = res[i]["phone"].as<string>();
+        ord.status = res[i]["status"].as<string>();
         orders.push_back(ord);
     }
     return orders;
@@ -59,21 +70,28 @@ std::string Database::addOrder(const std::string& contact,
     string q = "INSERT INTO orders (order_code, phone, parcel_article, cell) VALUES ($1, $2, $3, $4)";
     string code = "";
     if (looksLikePhone(contact)) {
-        w.exec_params(code, contact, "", cell);
+        w.exec_params(q, code, contact, "", cell);
     }
     else {
-        w.exec_params(code, "", contact, cell);
+        w.exec_params(q, code, "", contact, cell);
     }
-    q = "SELECT id FROM orders WHERE phone = $1 OR parcel_article = $1";
-    pqxx::result res = w.exec_params(q, contact);
+    q = "SELECT MAX(id) FROM orders";
+    pqxx::result res = w.exec(q);
     string pad = "";
-    int num = res[0]["id"];
-    int temp = num;
+    int num = res[0]["max"].as<int>();
+    int temp = num, dig = 0;
     while (temp % 10 != 0) {
-        pad += "0";
+        dig++;
         temp /= 10;
     }
-    code = "PVZ-" + pad + num;
+    for (int i = 0; i < (6 - dig); i++) {
+        pad += "0";
+    }
+    code = "PVZ-" + pad;
+    code += to_string(num);
+    q = "UPDATE orders SET order_code = $1 WHERE id = $2";
+    w.exec_params(q,code, num);
+    w.commit();
     return code;
 }
 
@@ -81,10 +99,10 @@ bool Database::issueOrder(const std::string& code) {
     pqxx::work w(conn_);
     string q = "SELECT*FROM orders WHERE order_code = $1";
     pqxx::result search = w.exec_params(q, code);
-    if (search.empty() || search[0]["status"] != "ready") {
+    if (search.empty() || search[0]["status"].as<string>() != "ready") {
         return false;
     }
-    q = "UPDATE orders SET status = $1, issued_at = NOW() WHERE order_code = $2"
+    q = "UPDATE orders SET status = $1, issued_at = NOW() WHERE order_code = $2";
     w.exec_params(q, "issued", code);
     w.commit();
     return true;
@@ -94,10 +112,10 @@ bool Database::cancelOrder(const std::string& code) {
     pqxx::work w(conn_);
     string q = "SELECT*FROM orders WHERE order_code = $1";
     pqxx::result search = w.exec_params(q, code);
-    if (search.empty() || search[0]["status"] != "ready") {
+    if (search.empty() || search[0]["status"].as<string>() != "ready") {
         return false;
     }
-    q = "UPDATE orders SET status = $1 WHERE order_code = $2"
+    q = "UPDATE orders SET status = $1 WHERE order_code = $2";
     w.exec_params(q, "cancelled", code);
     w.commit();
     return true;
@@ -120,24 +138,35 @@ Report Database::buildReport() {
 std::vector<Order> Database::listByStatus(const std::string& status) {
     std::vector<Order> orders;
     pqxx::work w(conn_);
+    pqxx::result res;
     string q;
     if (status.empty()) {
-        q = "SELECT*FROM orders ORDER BY issued_at DESC"
-            res = w.exec(q)
+        q = "SELECT*FROM orders ORDER BY issued_at DESC";
+        res = w.exec(q);
     }
     else {
-        q = "SELECT*FROM orders WHERE status = $1 ORDER BY issued_at DESC"
+        q = "SELECT*FROM orders WHERE status = $1 ORDER BY issued_at DESC";
             res = w.exec_params(q, status);
     }
     for (int i = 0; i < res.size(); i++) {
         Order ord;
-        ord.id = res[i]["id"];
-        ord.article = res[i]["parcel_article"];
-        ord.cell = res[i]["cell"];
-        ord.code = res[i]["order_code"];
-        ord.created_at = res[i]["created_at"];
-        ord.phone = res[i]["phone"];
-        ord.status = res[i]["status"];
+        ord.id = res[i]["id"].as<int>();
+        if (res[i]["parcel_article"].is_null()) {
+            ord.article = "";
+        }
+        else {
+            ord.article = res[i]["parcel_article"].as<string>();
+        }
+        if (res[i]["cell"].is_null()) {
+            ord.cell = "";
+        }
+        else {
+            ord.cell = res[i]["cell"].as<string>();
+        }
+        ord.code = res[i]["order_code"].as<string>();
+        ord.created_at = res[i]["created_at"].as<string>();
+        ord.phone = res[i]["phone"].as<string>();
+        ord.status = res[i]["status"].as<string>();
         orders.push_back(ord);
     }
     return orders;

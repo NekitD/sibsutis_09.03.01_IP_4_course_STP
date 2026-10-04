@@ -3,6 +3,9 @@
 #include <string>
 #include <vector>
 
+using namespace std;
+using namespace pqxx;
+
 struct Order {
     int         id;
     std::string code;
