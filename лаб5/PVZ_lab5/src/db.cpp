@@ -18,7 +18,7 @@ bool looksLikePhone(const std::string& s) {
     return digits >= 10;
 }
 
-Order rowToOrder(const pqxx::row& row)
+Order rowToOrder(const pqxx::row_ref& row)
 {
     Order ord;
     ord.id = row["id"].as<int>();
