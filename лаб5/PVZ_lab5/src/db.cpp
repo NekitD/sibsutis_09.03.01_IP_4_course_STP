@@ -18,6 +18,45 @@ bool looksLikePhone(const std::string& s) {
     return digits >= 10;
 }
 
+Order rowToOrder(const pqxx::row& row)
+{
+    Order ord;
+    ord.id = row["id"].as<int>();
+
+    if(row["parcel_article"].is_null())
+    {
+        ord.article = "";
+    }
+    else
+    {
+        ord.article = row["parcel_article"].as<string>();
+    }
+
+    if(row["cell"].is_null())
+    {
+        ord.cell = "";
+    }
+    else
+    {
+        ord.cell = row["cell"].as<string>();
+    }
+
+    if(row["phone"].is_null())
+    {
+        ord.phone = "";
+    }
+    else
+    {
+        ord.phone = row["phone"].as<string>();
+    }
+
+    ord.code = row["order_code"].as<string>();
+    ord.created_at = row["created_at"].as<string>();
+    ord.status = row["status"].as<string>();
+    return ord;
+}
+
+
 } 
 
 Database::Database(const std::string& conn_str)
@@ -33,39 +72,21 @@ std::vector<Order> Database::listOrders(const std::string& filter) {
     pqxx::result res;
     string q;
     if (filter.empty()) {
-        q = "SELECT*FROM orders ORDER BY issued_at DESC";
+        q = "SELECT*FROM orders ORDER BY created_at DESC";
         res = w.exec(q);
     }
     else {
-        q = "SELECT*FROM orders WHERE (POSITION($1 IN order_code) != 0 OR POSITION($1 IN phone) != 0 OR POSITION($1 IN parcel_article) != 0) ORDER BY issued_at DESC";
+        q = "SELECT*FROM orders WHERE (POSITION($1 IN order_code) != 0 OR POSITION($1 IN phone) != 0 OR POSITION($1 IN parcel_article) != 0) ORDER BY created_at DESC";
         res = w.exec_params(q, filter);
     }
-    for (int i = 0; i < res.size(); i++) {
-        Order ord;
-        ord.id = res[i]["id"].as<int>();
-        if (res[i]["parcel_article"].is_null()) {
-            ord.article = "";
-        }
-        else {
-            ord.article = res[i]["parcel_article"].as<string>();
-        }
-        if (res[i]["cell"].is_null()) {
-            ord.cell = "";
-        }
-        else {
-            ord.cell = res[i]["cell"].as<string>();
-        }
-        ord.code = res[i]["order_code"].as<string>();
-        ord.created_at = res[i]["created_at"].as<string>();
-        ord.phone = res[i]["phone"].as<string>();
-        ord.status = res[i]["status"].as<string>();
-        orders.push_back(ord);
+    for(int i = 0; i < res.size(); i++)
+    {
+        orders.push_back(rowToOrder(res[i]));
     }
     return orders;
 }
 
-std::string Database::addOrder(const std::string& contact,
-                               const std::string& cell) {
+std::string Database::addOrder(const std::string& contact, const std::string& cell) {
     pqxx::work w(conn_);
     string q = "INSERT INTO orders (order_code, phone, parcel_article, cell) VALUES ($1, $2, $3, $4)";
     string code = "";
@@ -148,35 +169,18 @@ std::vector<Order> Database::listByStatus(const std::string& status) {
         q = "SELECT*FROM orders WHERE status = $1 ORDER BY issued_at DESC";
             res = w.exec_params(q, status);
     }
-    for (int i = 0; i < res.size(); i++) {
-        Order ord;
-        ord.id = res[i]["id"].as<int>();
-        if (res[i]["parcel_article"].is_null()) {
-            ord.article = "";
-        }
-        else {
-            ord.article = res[i]["parcel_article"].as<string>();
-        }
-        if (res[i]["cell"].is_null()) {
-            ord.cell = "";
-        }
-        else {
-            ord.cell = res[i]["cell"].as<string>();
-        }
-        ord.code = res[i]["order_code"].as<string>();
-        ord.created_at = res[i]["created_at"].as<string>();
-        ord.phone = res[i]["phone"].as<string>();
-        ord.status = res[i]["status"].as<string>();
-        orders.push_back(ord);
+    for (int i = 0; i < res.size(); i++)
+    {
+        orders.push_back(rowToOrder(res[i]));
     }
     return orders;
 }
 
 int Database::countClosedOrders() {
     pqxx::work w(conn_);
-    string q = "SELECT*FROM orders WHERE status = $1 OR status = $2";
+    string q = "SELECT COUNT(*) FROM orders WHERE status = $1 OR status = $2";
     pqxx::result res = w.exec_params(q, "cancelled", "issued");
-    return res.size();
+    return res[0][0].as<int>();
 }
 
 int Database::deleteClosedOrders() {
