@@ -145,14 +145,14 @@ bool Database::cancelOrder(const std::string& code) {
 Report Database::buildReport() {
     int ready, issued, cancelled;
     pqxx::work w(conn_);
-    string q = "SELECT*FROM orders WHERE status = $1";
+    string q = "SELECT COUNT(*) FROM orders WHERE status = $1";
     pqxx::result res; 
     res = w.exec_params(q, "ready");
-    ready = res.size();
+    ready = res[0][0].as<int>();
     res = w.exec_params(q, "issued");
-    issued = res.size();
+    issued = res[0][0].as<int>();
     res = w.exec_params(q, "cancelled");
-    cancelled = res.size();
+    cancelled = res[0][0].as<int>();
     return Report(ready, issued, cancelled);
 }
 
