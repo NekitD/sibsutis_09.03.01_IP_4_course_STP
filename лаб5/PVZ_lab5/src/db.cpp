@@ -162,11 +162,11 @@ std::vector<Order> Database::listByStatus(const std::string& status) {
     pqxx::result res;
     string q;
     if (status.empty()) {
-        q = "SELECT*FROM orders ORDER BY issued_at DESC";
+        q = "SELECT*FROM orders ORDER BY created_at DESC";
         res = w.exec(q);
     }
     else {
-        q = "SELECT*FROM orders WHERE status = $1 ORDER BY issued_at DESC";
+        q = "SELECT*FROM orders WHERE status = $1 ORDER BY created_at DESC";
             res = w.exec_params(q, status);
     }
     for (int i = 0; i < res.size(); i++)
