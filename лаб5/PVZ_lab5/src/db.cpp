@@ -89,7 +89,7 @@ std::vector<Order> Database::listOrders(const std::string& filter) {
 std::string Database::addOrder(const std::string& contact, const std::string& cell) {
     pqxx::work w(conn_);
     string q = "INSERT INTO orders (order_code, phone, parcel_article, cell) VALUES ($1, $2, $3, $4)";
-    string code = "";
+    string code = ""; // must be unic
     if (looksLikePhone(contact)) {
         w.exec_params(q, code, contact, "", cell);
     }
@@ -101,7 +101,8 @@ std::string Database::addOrder(const std::string& contact, const std::string& ce
     string pad = "";
     int num = res[0]["max"].as<int>();
     int temp = num, dig = 0;
-    while (temp % 10 != 0) {
+
+    while (temp % 10 != 0 || temp >= 10) {
         dig++;
         temp /= 10;
     }
