@@ -134,7 +134,8 @@ void Service::giveBack(long assetId) {
     odb::transaction t(db_.begin());
     if (db_.query<Asset>(QAst::id == assetId).empty())
         throw DomainError("Такой техники нет!");
-    odb::result act = db_.query<Assignment>(QAsg::assetId == assetId);
+    odb::result act = db_.query<Assignment>(QAsg::assetId == assetId 
+        && QAsg::returnedAt.is_null());
     if(act.empty())
         throw DomainError("Нет активной выдачи для этой техники!");
 
