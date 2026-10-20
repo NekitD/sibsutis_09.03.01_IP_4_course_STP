@@ -22,11 +22,11 @@ private:
 
     #pragma db id auto
     long id_ = 0;
-    #pragma db not null column("asset_id")
+    #pragma db not_null column("asset_id")
     long assetId_ = 0;
-    #pragma db not null column("employee_id")
+    #pragma db not_null column("employee_id")
     long employeeId_ = 0;
-    #pragma db not null column("issued_at")
+    #pragma db not_null column("issued_at")
     std::time_t issuedAt_ = 0;
     #pragma db column("returned_at")
     odb::nullable<std::time_t> returnedAt_;

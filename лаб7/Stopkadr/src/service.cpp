@@ -40,9 +40,9 @@ void Service::addEmployee(const std::string& name, const std::string& email) {
 void Service::updateEmployee(long id, const std::string& name,
                               const std::string& email, bool active) {
     odb::transaction t(db_.begin());
-    if (!db_.query<Employee>(QEmp::email == email).empty())
+    if (!db_.query<Employee>(QEmp::email == email && QEmp::id != id).empty())
         throw DomainError("Фотограф с email " + email + " уже существует");
-    if(!active && !db_.query<Assignment>(QAsg::employee_id == id, QAsg::returned_at.is_null()).empty())
+    if(!active && !db_.query<Assignment>(QAsg::employeeId == id && QAsg::returnedAt.is_null()).empty())
         throw DomainError("У фотографа на руках техника - сначала примите возврат!");
     
     std::unique_ptr<Employee> e(db_.load<Employee>(id));
@@ -57,19 +57,28 @@ void Service::updateEmployee(long id, const std::string& name,
 
 // ЗАДАЧА: список всей техники с указанием текущего держателя.
 std::vector<AssetRow> Service::assets() {
+    odb::transaction t(db_.begin());
     odb::result a = db_.query<Asset>();
     std::vector<AssetRow> ars;
 
-    for (int i = 0; i < a.length(); i++) {
+    for (const Asset& asset : db_.query<Asset>()) {
         AssetRow ar;
         ar.holder = "";
-        Assignment asg = db_.query<Assignment>(QAsg::asset_id == a[i].id())[0];
-        Employee emp = db_.query<Employee>(QEmp::employee_id == asg.employeeId())[0];
-        if(emp) ar.holder = emp.fullName();
-        ar.asset = a[i];
+
+        auto r = db_.query<Assignment>(QAsg::assetId == asset.id() && QAsg::returnedAt.is_null());
+        Assignment asg{};
+        if (r.begin() != r.end()){
+            asg = *r.begin();
+
+            auto e = db_.query<Employee>(QEmp::id == asg.employeeId());
+            if (e.begin() != e.end()){
+                ar.holder = e.begin()->fullName();
+            }
+        }
+        ar.asset = asset;
         ars.push_back(ar);
     }
-
+    t.commit();
     return ars;
 }
 
@@ -77,7 +86,7 @@ std::vector<AssetRow> Service::assets() {
 void Service::addAsset(const std::string& inv, const std::string& model,
                        const std::string& cat) {
     odb::transaction t(db_.begin());
-    if (!db_.query<Asset>(QAst::inventory_number == inv).empty())
+    if (!db_.query<Asset>(QAst::inventoryNumber == inv).empty())
         throw DomainError("Инвентарный номер " + inv + " уже существует");
     Asset a;
     a.setInventoryNumber(inv);
@@ -94,44 +103,49 @@ void Service::addAsset(const std::string& inv, const std::string& model,
 
 void Service::issue(long assetId, long employeeId) {
     odb::transaction t(db_.begin());
-    odb::result ares = db_.query<Asset>(QAst::asset_id == assetId);
-    if (a.empty())
+    odb::result ares = db_.query<Asset>(QAst::id == assetId);
+    if (ares.empty())
         throw DomainError("Такой техники нет!");
 
-    if (ares[0].assigned())
+    if (ares.begin()->isAssigned())
         throw DomainError("Техника уже выдана!");
   
-    odb::result eres = db_.query<Employee>(QEmp::employee_id == employeeId);
+    odb::result eres = db_.query<Employee>(QEmp::id == employeeId);
     if (eres.empty())
         throw DomainError("Такого фотографа нет!");
 
-    if (!eres[0].active())
+    if (!eres.begin()->isActive())
         throw DomainError("Нельзя выдать уволенному фотографу!");
     Assignment nasg;
     nasg.setAssetId(assetId);
     nasg.setEmployeeId(employeeId);
     nasg.setIssuedAt(static_cast<long long>(std::time(NULL)));
-    nasg.setReturnedAt(NULL);
+
+    std::unique_ptr<Asset> a(db_.load<Asset>(assetId));
+    a->setAssigned(true);
+
     db_.persist(nasg);
+    db_.update(*a);
     t.commit();
 }
 
 // ЗАДАЧА: возврат техники со съёмки обратно в стойку.
 void Service::giveBack(long assetId) {
     odb::transaction t(db_.begin());
-    if (db_.query<Asset>(QAst::asset_id == assetId).empty())
+    if (db_.query<Asset>(QAst::id == assetId).empty())
         throw DomainError("Такой техники нет!");
-    odb::result act = db_.query<Assignment>(QAsg::asset_id == assetId);
+    odb::result act = db_.query<Assignment>(QAsg::assetId == assetId);
     if(act.empty())
         throw DomainError("Нет активной выдачи для этой техники!");
 
-    std::unique_ptr<Assignment> a1(db_.load<Assignment>(act[0].id()));
+    std::unique_ptr<Assignment> a1(db_.load<Assignment>(act.begin()->id()));
     a1->setReturnedAt(static_cast<long long>(std::time(NULL)));
 
     std::unique_ptr<Asset> a2(db_.load<Asset>(assetId));
-    a2->setActive(false);
+    a2->setAssigned(false);
 
-    db_.update(*e);
+    db_.update(*a1);
+    db_.update(*a2);
     t.commit();
 }
 

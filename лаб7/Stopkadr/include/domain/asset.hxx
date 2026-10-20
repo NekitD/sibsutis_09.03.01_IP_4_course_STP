@@ -21,12 +21,14 @@ private:
 
     #pragma db id auto
     long id_ = 0;
-    #pragma db not null unique column("inventory_number")
+    #pragma db not_null 
+    #pragma db unique 
+    #pragma db column("inventory_number")
     std::string inventoryNumber_;
-    #pragma db not null column("model")
+    #pragma db not_null column("model")
     std::string model_;
-    #pragma db not null column("category")
+    #pragma db not_null column("category")
     std::string category_;
-    #pragma db not null column("assgned")
+    #pragma db not_null column("assigned")
     bool assigned_ = false;
 };
