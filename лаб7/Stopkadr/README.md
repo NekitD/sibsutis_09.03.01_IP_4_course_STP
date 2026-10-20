@@ -68,8 +68,8 @@ sudo -u postgres psql -d stopkadr -f sql/schema.sql
 > Поэтому имена переменных **не совпадают** с тем, что они содержат.
 
 ```bash
-export EQDB_NAME=ВАШЕ      # → уходит в user
-export EQDB_USER=ВАШЕ      # → уходит в password
+export EQDB_NAME=postgres     # → уходит в user
+export EQDB_USER=postgres     # → уходит в password
 export EQDB_PASS=stopkadr      # → уходит в dbname
 export EQDB_HOST=localhost
 ```
@@ -78,8 +78,8 @@ export EQDB_HOST=localhost
 
 ```bash
 cat >> ~/.bashrc <<'EOF'
-export EQDB_NAME=ВАШЕ
-export EQDB_USER=ВАШЕ
+export EQDB_NAME=postgres
+export EQDB_USER=postgres
 export EQDB_PASS=stopkadr
 export EQDB_HOST=localhost
 EOF
