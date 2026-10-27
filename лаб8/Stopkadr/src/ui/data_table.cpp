@@ -12,9 +12,9 @@ DataTable::DataTable(int X, int Y, int W, int H) : Fl_Table_Row(X, Y, W, H) {
     end();
 }
 
-void DataTable::setup(std::vector<std::string> h, std::vector<int> weights) {
+void DataTable::setup(std::vector<std::string> h, std::vector<int> w) {
     headers_ = std::move(h);
-    weights_ = std::move(weights);
+    weights_ = std::move(w);
     sumWeight_ = 0;
     for (int wgt : weights_) sumWeight_ += wgt;
     if (sumWeight_ <= 0) sumWeight_ = 1;
@@ -27,7 +27,6 @@ void DataTable::setup(std::vector<std::string> h, std::vector<int> weights) {
 void DataTable::applyWidths() {
     if (sumWeight_ <= 0 || weights_.empty()) return;
 
-    // w() - 4 — запас под вертикальный скроллбар/границы
     int avail = w() - 4;
     if (avail < (int)weights_.size() * 40) avail = (int)weights_.size() * 40;
 
@@ -35,7 +34,7 @@ void DataTable::applyWidths() {
     for (int i = 0; i < (int)weights_.size(); ++i) {
         int cw;
         if (i == (int)weights_.size() - 1)
-            cw = avail - used;                                  // последняя — остаток
+            cw = avail - used;
         else
             cw = (int)((long long)avail * weights_[i] / sumWeight_);
         if (cw < 40) cw = 40;
@@ -53,7 +52,7 @@ void DataTable::resize(int X, int Y, int W, int H) {
 void DataTable::setRows(const std::vector<std::vector<std::string>>& data,
                         const std::vector<long>& ids) {
     rows_ = data;
-    ids_  = ids;
+    ids_ = ids;
     rows((int)rows_.size());
     redraw();
 }
@@ -67,6 +66,16 @@ long DataTable::selectedId() {
     for (int r = 0; r < rows(); ++r)
         if (row_selected(r) && r < (int)ids_.size()) return ids_[r];
     return -1;
+}
+
+void DataTable::selectById(long id) {
+    for (int r = 0; r < (int)ids_.size(); ++r) {
+        if (ids_[r] == id) {
+            select_row(r, 1);
+            redraw();
+            return;
+        }
+    }
 }
 
 void DataTable::draw() {
@@ -141,11 +150,19 @@ int DataTable::handle(int e) {
         if (cx == CONTEXT_CELL && R >= 0 && R < (int)ids_.size() && onActivate_)
             onActivate_(ids_[R]);
     }
+
     int ret = Fl_Table_Row::handle(e);
+
+    if (e == FL_PUSH && onSelect_) onSelect_();
+
     int R = -1, C = -1;
     ResizeFlag rf;
     TableContext cx = cursor2rowcol(R, C, rf);
     int newHover = (cx == CONTEXT_CELL) ? R : -1;
-    if (newHover != hoverRow_) { hoverRow_ = newHover; redraw(); }
+    if (newHover != hoverRow_) { hoverRow_ = newHover; }
+
+    if (e == FL_PUSH || e == FL_RELEASE || e == FL_DRAG)
+        redraw();
+
     return ret;
 }

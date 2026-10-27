@@ -14,7 +14,10 @@ public:
                  const std::vector<long>& ids);
     void setBadgeColumn(int col, const std::map<std::string, Fl_Color>& colors);
     long selectedId();
+    void selectById(long id);
+
     void onActivate(std::function<void(long)> cb) { onActivate_ = std::move(cb); }
+    void onSelect(std::function<void()> cb)       { onSelect_ = std::move(cb); }
 
     void resize(int X, int Y, int W, int H) override;
 
@@ -34,6 +37,7 @@ private:
     int badgeCol_ = -1;
     std::map<std::string, Fl_Color> badgeColors_;
     std::function<void(long)> onActivate_;
+    std::function<void()>     onSelect_;
 
     void applyWidths();
     void drawBadge(const std::string& text, int X, int Y, int W, int H);
