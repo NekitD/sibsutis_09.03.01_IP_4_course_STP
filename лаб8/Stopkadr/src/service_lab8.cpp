@@ -48,11 +48,45 @@ void Service::duplicateAsset(long sourceId, const std::string& newInv) {
 // При ошибке — ни одна не выдана.
 // ------------------------------------------------------------
 void Service::issueMultiple(const std::vector<long>& assetIds, long employeeId) {
-    std::vector<long>::const_iterator asset;
-    for(asset = assetIds.begin(); asset != assetIds.end(); asset++){
-        issue(*asset, employeeId);
+    if (assetIds.empty()) {
+        throw DomainError("Не выбрано ни одной единицы техники");
     }
+
+    odb::transaction t(db_.begin());
+
+    auto eres = db_.query<Employee>(QEmp::id == employeeId);
+    if (eres.begin() == eres.end()) {
+        throw DomainError("Такого фотографа нет!");
+    }
+    if (!eres.begin()->isActive()) {
+        throw DomainError("Нельзя выдать уволенному фотографу");
+    }
+
+    for (long id : assetIds) {
+        auto ares = db_.query<Asset>(QAst::id == id);
+        if (ares.begin() == ares.end()) {
+            throw DomainError("Такой техники нет!");
+        }
+        if (ares.begin()->isAssigned()) {
+            throw DomainError("Техника " + ares.begin()->inventoryNumber() + " уже выдана");
+        }
+    }
+
+    for (long id : assetIds) {
+        Assignment nasg;
+        nasg.setAssetId(id);
+        nasg.setEmployeeId(employeeId);
+        nasg.setIssuedAt(static_cast<std::time_t>(std::time(nullptr)));
+        db_.persist(nasg);
+
+        std::unique_ptr<Asset> a(db_.load<Asset>(id));
+        a->setAssigned(true);
+        db_.update(*a);
+    }
+
+    t.commit();
 }
+
 
 std::vector<Asset> Service::searchAssets(const std::string& category,
                                           bool onlyFree,
@@ -179,9 +213,43 @@ std::vector<Asset> Service::employeeAssets(long employeeId) {
 //         "Техника уже у этого фотографа".
 // ------------------------------------------------------------
 void Service::reassignAsset(long assetId, long newEmployeeId) {
-    giveBack(assetId);
-    issue(assetId, newEmployeeId);
+    odb::transaction t(db_.begin());
+
+    auto ares = db_.query<Asset>(QAst::id == assetId);
+    if (ares.begin() == ares.end()) {
+        throw DomainError("Такой техники нет!");
+    }
+
+    auto asg = db_.query<Assignment>(QAsg::assetId == assetId && QAsg::returnedAt.is_null());
+    if (asg.begin() == asg.end()) {
+        throw DomainError("Техника не выдана — используйте «Выдать»");
+    }
+
+    auto eres = db_.query<Employee>(QEmp::id == newEmployeeId);
+    if (eres.begin() == eres.end()) {
+        throw DomainError("Такого фотографа нет!");
+    }
+    if (!eres.begin()->isActive()) {
+        throw DomainError("Нельзя переназначить уволенному фотографу");
+    }
+
+    if (asg.begin()->employeeId() == newEmployeeId) {
+        throw DomainError("Техника уже у этого фотографа");
+    }
+
+    std::unique_ptr<Assignment> oldAsg(db_.load<Assignment>(asg.begin()->id()));
+    oldAsg->setReturnedAt(static_cast<std::time_t>(std::time(nullptr)));
+    db_.update(*oldAsg);
+
+    Assignment newAsg;
+    newAsg.setAssetId(assetId);
+    newAsg.setEmployeeId(newEmployeeId);
+    newAsg.setIssuedAt(static_cast<std::time_t>(std::time(nullptr)));
+    db_.persist(newAsg);
+
+    t.commit();
 }
+
 
 // ------------------------------------------------------------
 // Удалить технику и все её выдачи. Только если не выдана.
