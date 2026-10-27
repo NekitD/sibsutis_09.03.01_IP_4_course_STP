@@ -20,9 +20,24 @@ using QAsg = odb::query<Assignment>;
 // Ошибка: "Инвентарный номер <newInv> уже существует".
 // ------------------------------------------------------------
 void Service::duplicateAsset(long sourceId, const std::string& newInv) {
-    (void)sourceId;
-    (void)newInv;
-    throw std::logic_error("Service::duplicateAsset not implemented");
+    odb::transaction t(db_.begin());
+
+
+    if (!db_.query<Asset>(QAst::inventoryNumber == newInv).empty())
+        throw DomainError("Инвентарный номер " + newInv + " уже существует");
+
+    Asset a;
+    odb::result<Asset> r = db_.query<Asset>(QAst::id == sourceId);
+    if (r.begin() != r.end()){
+        a = *r.begin();
+    }
+    Asset na;
+    na.setInventoryNumber(newInv);
+    na.setModel(a.model());
+    na.setCategory(a.category());
+    na.setAssigned(false);
+    db_.persist(na);
+    t.commit();
 }
 
 // ------------------------------------------------------------
@@ -33,9 +48,10 @@ void Service::duplicateAsset(long sourceId, const std::string& newInv) {
 // При ошибке — ни одна не выдана.
 // ------------------------------------------------------------
 void Service::issueMultiple(const std::vector<long>& assetIds, long employeeId) {
-    (void)assetIds;
-    (void)employeeId;
-    throw std::logic_error("Service::issueMultiple not implemented");
+    std::vector<long>::const_iterator asset;
+    for(asset = assetIds.begin(); asset != assetIds.end(); asset++){
+        issue(*asset, employeeId);
+    }
 }
 
 std::vector<Asset> Service::searchAssets(const std::string& category,
@@ -163,9 +179,8 @@ std::vector<Asset> Service::employeeAssets(long employeeId) {
 //         "Техника уже у этого фотографа".
 // ------------------------------------------------------------
 void Service::reassignAsset(long assetId, long newEmployeeId) {
-    (void)assetId;
-    (void)newEmployeeId;
-    throw std::logic_error("Service::reassignAsset not implemented");
+    giveBack(assetId);
+    issue(assetId, newEmployeeId);
 }
 
 // ------------------------------------------------------------
@@ -173,6 +188,18 @@ void Service::reassignAsset(long assetId, long newEmployeeId) {
 // Ошибка: "Нельзя удалить выданную технику — сначала примите возврат".
 // ------------------------------------------------------------
 void Service::deleteAssetCascade(long assetId) {
-    (void)assetId;
-    throw std::logic_error("Service::deleteAssetCascade not implemented");
+    odb::transaction t(db_.begin());
+
+    odb::result<Asset> r = db_.query<Asset>(QAst::id == assetId);
+    if (r.begin() == r.end())
+        throw DomainError("Такой техники не существует");
+
+    if (!db_.query<Assignment>(QAsg::assetId == assetId && QAsg::returnedAt.is_null()).empty()) {
+        throw DomainError("Нельзя удалить выданную технику — сначала примите возврат");
+    }
+
+    db_.erase_query<Assignment>(QAsg::assetId == assetId);
+    db_.erase_query<Asset>(QAst::id == assetId);
+
+    t.commit();
 }
