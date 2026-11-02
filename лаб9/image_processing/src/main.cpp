@@ -153,7 +153,7 @@ void ParProc(const vector<string>& files, const string& outDir, int op, int nt, 
 
     std::vector<std::thread> threads;
     for (int i = 0; i < nt; ++i) {
-        threads.emplace_back(workerThread, 
+        threads.emplace_back(Thread, 
             std::ref(taskQueue), 
             std::ref(queueMutex), 
             std::ref(coutMutex), 
@@ -179,16 +179,19 @@ void workerThread(
     while (true) {
         string file;
 
-        std::lock_guard<std::mutex> lock(queueMutex);
-        if (taskQueue.empty()) break;
-        file = taskQueue.front();
-        taskQueue.pop();
-            
+        {
+            std::lock_guard<std::mutex> lock(queueMutex);
+            if (taskQueue.empty()) break;
+            file = taskQueue.front();
+            taskQueue.pop();
+        }
 
         Image img;
         if (!img.load(file)) {
-            std::lock_guard<std::mutex> lock(coutMutex);
-            cout << "Failed to load: " << file << endl;
+            {
+                std::lock_guard<std::mutex> lock(coutMutex);
+                cout << "Failed to load: " << file << endl;
+            }
             res.failed++;
             continue;
         }
@@ -198,16 +201,20 @@ void workerThread(
 
         string outPath = generateOutputPath(file, outDir);
         if (!img.save(outPath)) {
-            std::lock_guard<std::mutex> lock(coutMutex);
-            cout << "Failed to save: " << outPath << endl;
+            {
+                std::lock_guard<std::mutex> lock(coutMutex);
+                cout << "Failed to save: " << outPath << endl;
+            }
             res.failed++;
             continue;
         }
 
         res.success++;
-            
-        std::lock_guard<std::mutex> lock(coutMutex);
-        cout << "Processed: " << file << endl;
+
+        {
+            std::lock_guard<std::mutex> lock(coutMutex);
+            cout << "Processed: " << file << endl;
+        }
     }
 }
 
