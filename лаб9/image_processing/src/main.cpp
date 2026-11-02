@@ -21,8 +21,8 @@ typedef struct results {
 } results;
 
 
-void SeqProcess(string, string, int);
-void ParProc(string, string, int, int);
+void SeqProcess(const vector<string>&, const string&, int, results&);
+void ParProc(const vector<string>&, const string&, int, int, results&);
 void Thread(std::queue<string>&, std::mutex&, std::mutex&, const string&, int, results&);
 
 bool isValidOperation(int op);
@@ -87,8 +87,8 @@ int main() {
         results res;
         auto startTime = std::chrono::high_resolution_clock::now();
         switch(mode){
-            case 1: SeqProcess(input, output, operation);
-            case 2: ParProc(input, output, operation, nt);
+            case 1: SeqProcess(imageFiles, output, operation, res);
+            case 2: ParProc(imageFiles, output, operation, nt, res);
         }
         auto endTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = endTime - startTime;
@@ -168,7 +168,7 @@ void ParProc(const vector<string>& files, const string& outDir, int op, int nt, 
     }
 }
 
-void workerThread(
+void Thread(
     std::queue<string>& taskQueue,
     std::mutex& queueMutex,
     std::mutex& coutMutex,
