@@ -35,16 +35,22 @@ int main() {
     while(true){
         cout << "Enter input directory: ";
         cin >> input;
+        if (!fs::exists(input)) {
+            cout << "There's no such directory!";
+            return 1;
+        }
         cout << "Enter output directory: ";
         cin >> output;
-        cout << "Scanning input directory..." << endl;
+        if (!fs::exists(output)) {
+            fs::create_directories(output);
+        }
         cout << "Scanning input directory..." << endl;
         vector<string> imageFiles;
         for (const auto& entry : fs::directory_iterator(input)) {
             if (entry.is_regular_file()) {
                 string ext = entry.path().extension().string();
                 transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-                if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".tga" || ext == ".webp") {
+                if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".tga") {
                     imageFiles.push_back(entry.path().string());
                 }
             }
@@ -87,8 +93,8 @@ int main() {
         results res;
         auto startTime = std::chrono::high_resolution_clock::now();
         switch(mode){
-            case 1: SeqProcess(imageFiles, output, operation, res);
-            case 2: ParProc(imageFiles, output, operation, nt, res);
+            case 1: SeqProcess(imageFiles, output, operation, res); break;
+            case 2: ParProc(imageFiles, output, operation, nt, res); break;
         }
         auto endTime = std::chrono::high_resolution_clock::now();
         std::chrono::duration<double> elapsed = endTime - startTime;
