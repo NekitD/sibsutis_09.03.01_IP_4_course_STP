@@ -44,7 +44,7 @@ int main() {
             if (entry.is_regular_file()) {
                 string ext = entry.path().extension().string();
                 transform(ext.begin(), ext.end(), ext.begin(), ::tolower);
-                if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".tga") {
+                if (ext == ".jpg" || ext == ".jpeg" || ext == ".png" || ext == ".bmp" || ext == ".tga" || ext == ".webp") {
                     imageFiles.push_back(entry.path().string());
                 }
             }
