@@ -23,7 +23,7 @@ typedef struct results {
 
 void SeqProcess(const vector<string>&, const string&, int, results&);
 void ParProc(const vector<string>&, const string&, int, int, results&);
-void Thread(std::queue<string>&, std::mutex&, std::mutex&, const string&, int, results&);
+void Thread(std::queue<string>&, std::mutex&, std::mutex&, std::mutex&, const string&, int, results&);
 
 bool isValidOperation(int op);
 bool isValidMode(int mode);
@@ -156,6 +156,7 @@ void ParProc(const vector<string>& files, const string& outDir, int op, int nt, 
 
     std::mutex queueMutex;
     std::mutex coutMutex;
+    std::mutex couterMutex;
 
     std::vector<std::thread> threads;
     for (int i = 0; i < nt; ++i) {
@@ -163,6 +164,7 @@ void ParProc(const vector<string>& files, const string& outDir, int op, int nt, 
             std::ref(taskQueue), 
             std::ref(queueMutex), 
             std::ref(coutMutex), 
+            std::ref(couterMutex), 
             std::cref(outDir), 
             op, 
             std::ref(res)
@@ -178,6 +180,7 @@ void Thread(
     std::queue<string>& taskQueue,
     std::mutex& queueMutex,
     std::mutex& coutMutex,
+    std::mutex& counterMutex,
     const string& outDir,
     int op,
     results& res
@@ -198,7 +201,10 @@ void Thread(
                 std::lock_guard<std::mutex> lock(coutMutex);
                 cout << "Failed to load: " << file << endl;
             }
-            res.failed++;
+            {
+                std::lock_guard<std::mutex> lock(counterMutex);
+                res.failed++;
+            }
             continue;
         }
 
@@ -211,12 +217,19 @@ void Thread(
                 std::lock_guard<std::mutex> lock(coutMutex);
                 cout << "Failed to save: " << outPath << endl;
             }
-            res.failed++;
+            {
+                std::lock_guard<std::mutex> lock(counterMutex);
+                res.failed++;
+            }
+            
             continue;
         }
 
-        res.success++;
-
+        {
+            std::lock_guard<std::mutex> lock(counterMutex);
+            res.success++;
+        }
+        
         {
             std::lock_guard<std::mutex> lock(coutMutex);
             cout << "Processed: " << file << endl;
