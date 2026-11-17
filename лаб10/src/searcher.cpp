@@ -15,15 +15,15 @@ vector<string> searchSubstring(
     if (i) {
         transform(sub.begin(), sub.end(), sub.begin(), 
             [](unsigned char c){ return tolower(c); });
-    }
-
-    for(size_t idx = 0; idx < text.size(); ++idx){
-        string str = text[idx];
-        
-        if (i) {
+        for(size_t idx = 0; idx < text.size(); idx++){
+            string str = text[idx];
             transform(str.begin(), str.end(), str.begin(), 
                 [](unsigned char c){ return tolower(c); });
         }
+    }
+
+    for(size_t idx = 0; idx < text.size(); idx++){
+        string str = text[idx];
 
         if(filter(str, sub, v, w, x)){
             if (n) {
