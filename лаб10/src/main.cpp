@@ -28,6 +28,7 @@ struct SharedState {
     string global_output;
     int final_exit_code = 1; 
 
+    mutex statistic_mtx;
     size_t total_files = 0;
     size_t total_matches = 0;
     size_t total_errors = 0;
@@ -55,18 +56,23 @@ void worker_thread(SharedState& state, const SearchOptions& opts) {
         int code = processFile(filepath, opts.sub, opts.i, opts.v, opts.n, 
                                opts.h, opts.H, opts.c, opts.l, opts.w, opts.x, opts.q, 
                                out, matches);
-
-        lock_guard<mutex> lock(state.output_mtx);
-        state.global_output += out;
         
-        state.total_files++;
-        state.total_matches += matches;
-        if (code == 2) {
-            state.total_errors++;
-            state.final_exit_code = 2;
-            cerr << "Error: Could not open file " << filepath << "\n";
-        } else if (code == 0 && state.final_exit_code != 2) {
-            state.final_exit_code = 0;
+        {
+            lock_guard<mutex> lock(state.output_mtx);
+            state.global_output += out;
+        }
+        
+        {
+            lock_guard<mutex> lock(state.statistic_mtx);
+            state.total_files++;
+            state.total_matches += matches;
+            if (code == 2) {
+                state.total_errors++;
+                state.final_exit_code = 2;
+                cout << "Error: Could not open file " << filepath << "\n";
+            } else if (code == 0 && state.final_exit_code != 2) {
+                state.final_exit_code = 0;
+            }
         }
     }
 }
