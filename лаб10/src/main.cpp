@@ -69,7 +69,7 @@ void worker_thread(SharedState& state, const SearchOptions& opts) {
             if (code == 2) {
                 state.total_errors++;
                 state.final_exit_code = 2;
-                cout << "Error: Could not open file " << filepath << "\n";
+                //cout << "Error: Could not open file " << filepath << "\n";
             } else if (code == 0 && state.final_exit_code != 2) {
                 state.final_exit_code = 0;
             }
@@ -79,7 +79,7 @@ void worker_thread(SharedState& state, const SearchOptions& opts) {
 
 int main(int argc, char* argv[]) {
     SearchOptions opts{};
-    int num_threads = thread::hardware_concurrency();
+    int num_threads = 1;
     string search_path = "";
     bool path_found = false;
     bool sub_found = false;
