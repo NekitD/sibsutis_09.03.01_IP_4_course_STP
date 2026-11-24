@@ -21,8 +21,8 @@ struct SearchOptions {
 struct SharedState {
     queue<string> file_queue;
     mutex queue_mtx;
-    condition_variable queue_cv;
-    bool producer_done = false;
+    // condition_variable queue_cv;
+    // bool producer_done = false;
 
     mutex output_mtx;
     string global_output;
@@ -38,12 +38,12 @@ void worker_thread(SharedState& state, const SearchOptions& opts) {
     while (true) {
         string filepath;
         {
-            unique_lock<mutex> lock(state.queue_mtx);
-            state.queue_cv.wait(lock, [&state] { 
-                return !state.file_queue.empty() || state.producer_done; 
-            });
+            lock_guard<mutex> lock(state.queue_mtx);
+            // state.queue_cv.wait(lock, [&state] { 
+            //     return !state.file_queue.empty() || state.producer_done; 
+            // });
 
-            if (state.file_queue.empty() && state.producer_done) {
+            if (state.file_queue.empty()) {
                 break;
             }
 
@@ -143,11 +143,7 @@ int main(int argc, char* argv[]) {
 
     SharedState state;
     auto start_time = chrono::high_resolution_clock::now();
-
-    vector<thread> workers;
-    for (int i = 0; i < num_threads; ++i) {
-        workers.emplace_back(worker_thread, ref(state), cref(opts));
-    }
+    
 
     fs::path root_path("./files/" + search_path);
 
@@ -160,7 +156,6 @@ int main(int argc, char* argv[]) {
                         lock_guard<mutex> lock(state.queue_mtx);
                         state.file_queue.push(entry.path().string());
                     }
-                    state.queue_cv.notify_one();
                 }
             }
         } else {
@@ -169,7 +164,6 @@ int main(int argc, char* argv[]) {
                     lock_guard<mutex> lock(state.queue_mtx);
                     state.file_queue.push(root_path.string());
                 }
-                state.queue_cv.notify_one();
             } else if (fs::is_directory(root_path)) {
                 for (const auto& entry : fs::directory_iterator(root_path)) {
                     if (entry.is_regular_file()) {
@@ -177,7 +171,6 @@ int main(int argc, char* argv[]) {
                             lock_guard<mutex> lock(state.queue_mtx);
                             state.file_queue.push(entry.path().string());
                         }
-                        state.queue_cv.notify_one();
                     }
                 }
             }
@@ -187,11 +180,10 @@ int main(int argc, char* argv[]) {
         state.final_exit_code = 2;
     }
 
-    {
-        lock_guard<mutex> lock(state.queue_mtx);
-        state.producer_done = true;
+    vector<thread> workers;
+    for (int i = 0; i < num_threads; ++i) {
+        workers.emplace_back(worker_thread, ref(state), cref(opts));
     }
-    state.queue_cv.notify_all();
 
     for (auto& t : workers) {
         if (t.joinable()) t.join();

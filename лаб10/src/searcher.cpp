@@ -38,7 +38,16 @@ vector<string> searchSubstring(
 
 bool isWord(const string& str, size_t pos, size_t len) {
     if (pos > 0 && str[pos - 1] != ' ') return false;
-    if (pos + len < str.size() && str[pos + len] != ' ') return false;
+    if (pos + len < str.size() && str[pos + len] != ' ' 
+    && str[pos + len] != '.' 
+    && str[pos + len] != '?' 
+    && str[pos + len] != '!'
+    && str[pos + len] != ','
+    && str[pos + len] != ':'
+    && str[pos + len] != ';'
+    && str[pos + len] != ')'
+    && str[pos + len] != '}'
+    && str[pos + len] != ']') return false;
     return true;
 }
 
@@ -107,7 +116,7 @@ int processFile(
     }
 
     if (count > 0) {
-        if (h && !H) output += filename + ":";
+        if (!h && H) output += filename + ":";
         for (const string& str : result) {
             output += str + "\n";
         }
